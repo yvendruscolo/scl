@@ -2,10 +2,15 @@
   (:require [jsonista.core :as j] ; fastest yet simple json around
             [clojure.string :as s]
             [clojure.java.io :as io]
-            [clojure.edn :as edn])
+            [clojure.edn :as edn]
+            [clojure.test :refer [is]])
   (:gen-class))
 
-(defn parse-line "Takes a header and a regex separator to build lines. If there is a header, outputs maps with the header as keys, else arrays."
+(defn parse-line 
+  "Takes a header and a regex separator to build lines. If there is a header, outputs maps with the header as keys, else arrays."
+  {:test #(do (is (= "[1,2.0,3]" ((parse-line false #"\,\s?") "1,2.0, 3")))
+              (is (= "{\"a\":1,\"b\":2}" ((parse-line ["a","b"] #"\;") "1;2")))
+              (is (= "{\"a\":\"b\",\"c\":\"d\"}" ((parse-line ["a","c"] #"\_") "b_d"))))}
   [header sep]
   (let [build-line (if header #(zipmap header %) identity)]
     #(->> (s/split % sep)
